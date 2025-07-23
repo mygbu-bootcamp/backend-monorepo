@@ -1,0 +1,182 @@
+version: '3.9'
+
+services:
+
+  # ─── USER MANAGEMENT ───
+  user_management_db:
+    image: postgres:15
+    container_name: user_db
+    environment:
+      POSTGRES_DB: user_db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: userpass
+    volumes:
+      - user_pgdata:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+
+  user_management:
+    build: ./user-management/usermanagement
+    ports:
+      - "6090:8000"
+    depends_on:
+      - user_management_db
+    environment:
+      DB_NAME: user_db
+      DB_USER: user
+      DB_PASSWORD: userpass
+      DB_HOST: user_db
+      DB_PORT: 5432
+
+
+  # ─── ACADEMIC STRUCTURE ───
+  academic_db:
+    image: postgres:15
+    container_name: academic_db
+    environment:
+      POSTGRES_DB: academic_db
+      POSTGRES_USER: academic
+      POSTGRES_PASSWORD: academicpass
+    volumes:
+      - academic_pgdata:/var/lib/postgresql/data
+    ports:
+      - "5434:5432"
+
+  academic_structure:
+    build: ./academic-backend-microservice/academicmanagement
+    ports:
+      - "6091:8000"
+    depends_on:
+      - academic_db
+    environment:
+      DB_NAME: academic_db
+      DB_USER: academic
+      DB_PASSWORD: academicpass
+      DB_HOST: academic_db
+      DB_PORT: 5432
+
+  # ─── ATTENDANCE ───
+  attendance_db:
+    image: postgres:15
+    container_name: attendance_db
+    environment:
+      POSTGRES_DB: attendance_db
+      POSTGRES_USER: attendance
+      POSTGRES_PASSWORD: attendancepass
+    volumes:
+      - attendance_pgdata:/var/lib/postgresql/data
+    ports:
+      - "5435:5432"
+
+  attendance:
+    build: ./Attendance-Management-Service/attendance
+    ports:
+      - "6092:8000"
+    depends_on:
+      - attendance_db
+    environment:
+      DB_NAME: attendance_db
+      DB_USER: attendance
+      DB_PASSWORD: attendancepass
+      DB_HOST: attendance_db
+      DB_PORT: 5432
+
+  # ─── COURSE REGISTRATION ───
+  course_db:
+    image: postgres:15
+    container_name: course_db
+    environment:
+      POSTGRES_DB: course_db
+      POSTGRES_USER: course
+      POSTGRES_PASSWORD: coursepass
+    volumes:
+      - course_pgdata:/var/lib/postgresql/data
+    ports:
+      - "5436:5432"
+
+  course_registration:
+    build: ./course-management-backend-microservice/course_management
+    ports:
+      - "6093:8000"
+    depends_on:
+      - course_db
+    environment:
+      DB_NAME: course_db
+      DB_USER: course
+      DB_PASSWORD: coursepass
+      DB_HOST: course_db
+      DB_PORT: 5432
+      command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+
+  # ─── EXAMINATION MANAGEMENT ───
+  exam_db:
+    image: postgres:15
+    container_name: exam_db
+    environment:
+      POSTGRES_DB: exam_db
+      POSTGRES_USER: exam
+      POSTGRES_PASSWORD: exampass
+    volumes:
+      - exam_pgdata:/var/lib/postgresql/data
+    ports:
+      - "5437:5432"
+
+  examination_management:
+    build: ./Examination-Assessment-Service/examination_assesment
+    ports:
+      - "6094:8000"
+    depends_on:
+      - exam_db
+    environment:
+      DB_NAME: exam_db
+      DB_USER: exam
+      DB_PASSWORD: exampass
+      DB_HOST: exam_db
+      DB_PORT: 5432
+
+  # ─── UNIVERSITY MANAGEMENT ───
+  university_db:
+    image: postgres:15
+    container_name: university_db
+    environment:
+      POSTGRES_DB: university_db
+      POSTGRES_USER: university
+      POSTGRES_PASSWORD: universitypass
+    volumes:
+      - university_pgdata:/var/lib/postgresql/data
+    ports:
+      - "5438:5432"
+
+  university_management:
+    build: ./university-organization-management-service/university
+    ports:
+      - "6096:8000"
+    depends_on:
+      - university_db
+    environment:
+      DB_NAME: university_db
+      DB_USER: university
+      DB_PASSWORD: universitypass
+      DB_HOST: university_db
+      DB_PORT: 5432
+
+  # ─── OPTIONAL: API GATEWAY ───
+  # api_gateway:
+  #   build: ./api_gateway
+  #   ports:
+  #     - "7000:8000"
+  #   depends_on:
+  #     - user_management
+  #     - academic_structure
+  #     - attendance
+  #     - course_registration
+  #     - examination_management
+  #     - university_management
+
+volumes:
+  user_pgdata:
+  academic_pgdata:
+  attendance_pgdata:
+  course_pgdata:
+  exam_pgdata:
+  university_pgdata:
